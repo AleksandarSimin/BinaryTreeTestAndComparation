@@ -67,6 +67,15 @@
                 android:visibility="invisible">
             </TextView>
 
+            <TextView
+                android:id="@+id/tvArraySearchTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="null"
+                android:visibility="invisible">
+            </TextView>
+
         </LinearLayout>
 
         <LinearLayout
@@ -100,6 +109,21 @@
                 android:text="Creation Time: "
                 android:visibility="invisible">
             </TextView>
+
+            <TextView
+                android:id="@+id/tvBinaryTreeSearchTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Search Time: "
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeStepGranularity="1sp"
+                android:visibility="invisible">
+            </TextView>
+
         </LinearLayout>
 
 
