@@ -8,13 +8,22 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/app_title_background"
+        android:titleTextColor="@android:color/white"
+        android:elevation="4dp"
+        app:title="Compare Array and Binary Tree"/>
+
     <TextView
         android:id="@+id/tvNumberOfItems"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="30dp"
-        android:text="Number of Elements"
+        android:layout_marginTop="60dp"
+        android:text="@string/number_of_elements"
         android:textSize="20sp"
         android:textStyle="bold" />
 
@@ -23,8 +32,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="15dp"
-        android:hint="Enter number"
+        android:layout_marginTop="30dp"
+        android:hint="@string/enter_number"
         android:inputType="number"
         android:gravity="center"
         android:textSize="20sp" />
@@ -32,7 +41,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="60dp"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -46,7 +55,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Array Elements">
+                android:text="@string/array_elements">
             </TextView>
 
             <Button
@@ -55,7 +64,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="30dp"
                 android:gravity="center"
-                android:text="Generate">
+                android:textStyle="bold"
+                android:text="@string/generate">
             </Button>
 
             <TextView
@@ -63,7 +73,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Creation Time:"
                 android:visibility="invisible">
             </TextView>
 
@@ -72,10 +81,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="null"
                 android:visibility="invisible">
             </TextView>
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llMiddle"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tvEquals"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="25dp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:textSize="22sp">
+            </TextView>
         </LinearLayout>
 
         <LinearLayout
@@ -89,7 +114,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Binary Tree">
+                android:text="@string/binary_tree">
             </TextView>
 
             <Button
@@ -98,7 +123,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="30dp"
                 android:gravity="center"
-                android:text="Generate">
+                android:textStyle="bold"
+                android:text= "@string/generate">
             </Button>
 
             <TextView
@@ -106,7 +132,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Creation Time: "
                 android:maxLines="1"
                 app:autoSizeTextType="uniform"
                 app:autoSizeMinTextSize="10sp"
@@ -120,7 +145,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Search Time: "
                 android:maxLines="1"
                 app:autoSizeTextType="uniform"
                 app:autoSizeMinTextSize="10sp"
@@ -141,7 +165,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:hint="enter search string"
+        android:hint="@string/automatically_generated"
         android:textSize="18sp">
     </EditText>
 
@@ -150,8 +174,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="SEARCH"
+        android:textStyle="bold"
+        android:text="@string/search"
         android:textSize="20sp" />
-
 
 </LinearLayout>

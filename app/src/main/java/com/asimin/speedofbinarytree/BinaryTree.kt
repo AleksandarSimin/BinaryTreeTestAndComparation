@@ -48,60 +48,35 @@ class BinaryTree<T : Comparable<T>> {
         }
     }
 
-    fun deleteNode(value: T) {
-        root = deleteNodeRecursive(root, value)
-    }
+    //get random Node.value from binary tree
+    fun getRandomNode(maxIndex: Int): String? {
+        val random = Random()                   //random number generator
+        val nodes = mutableListOf<Node<T>>()    //list of nodes
 
-    private fun deleteNodeRecursive(current: Node<T>?, value: T): Node<T>? {
-        if (current == null) {
+        fun traverse(node: Node<T>?) {  //inorder traversal of binary tree
+            if (node == null) {         //exit from traverse if node is null
+                return
+            }
+            traverse(node.left)         //traverse left subtree
+            nodes.add(node)             //add node to list
+            traverse(node.right)        //traverse right subtree
+        }
+
+        traverse(root)                  //traverse binary tree
+
+        if (maxIndex >= nodes.size) {   //finish if maxIndex is greater than size of list
             return null
         }
 
-        if (value == current.value) {
-            // Node to delete found
-            if (current.left == null && current.right == null) {
-                return null
-            }
-
-            if (current.right == null) {
-                return current.left
-            }
-
-            if (current.left == null) {
-                return current.right
-            }
-
-            val smallestValue = findSmallestValue(current.right!!)
-            current.value = smallestValue.value
-            current.right = deleteNodeRecursive(current.right, smallestValue.value)
-            return current
-        }
-
-        if (value < current.value) {
-            current.left = deleteNodeRecursive(current.left, value)
-            return current
-        }
-
-        current.right = deleteNodeRecursive(current.right, value)
-        return current
+        val randomIndex =
+            random.nextInt(maxIndex)                                          //get random index
+        return nodes.drop(randomIndex)
+            .first().value.toString() + " [" + randomIndex + "]"  //return random node value
     }
 
-    private fun findSmallestValue(root: Node<T>): Node<T> {
-        return if (root.left == null) {
-            root
-        } else {
-            findSmallestValue(root.left!!)
-        }
-    }
 
-    //get root node of binary tree as Node.value
-    fun getRootNode(): String {
-        return root!!.value.toString()
-    }
-
-    //get random Node.value from binary tree
-    fun getRandomNode(maxIndex: Int): String? {
-        val random = Random()
+    //get Node.value from binary Tree for given index
+    fun getNodeByIndex(index: Int): String? {
         val nodes = mutableListOf<Node<T>>()
 
         fun traverse(node: Node<T>?) {
@@ -115,52 +90,11 @@ class BinaryTree<T : Comparable<T>> {
 
         traverse(root)
 
-        if (maxIndex >= nodes.size) {
+        if (index >= nodes.size) {
             return null
         }
 
-        val randomIndex = random.nextInt(maxIndex)
-        return nodes.drop(randomIndex).first().value.toString() + " [" + randomIndex + "]"
-    }
-
-
-    //get Node.value from binary Tree for given index
-    fun getNodeByIndex(index: Int): String {
-        var randomNode: Node<T>? = null
-        var counter = 0
-        val iterator = object : Iterator<Node<T>> {
-            private var stack = Stack<Node<T>>()
-
-            init {
-                pushLeft(root)
-            }
-
-            private fun pushLeft(node: Node<T>?) {
-                var node = node
-                while (node != null) {
-                    stack.push(node)
-                    node = node.left
-                }
-            }
-
-            override fun hasNext(): Boolean {
-                return !stack.isEmpty()
-            }
-
-            override fun next(): Node<T> {
-                val node = stack.pop()
-                pushLeft(node.right)
-                return node
-            }
-        }
-        while (iterator.hasNext()) {
-            randomNode = iterator.next()
-            if (counter == index) {
-                break
-            }
-            counter++
-        }
-        return randomNode!!.value.toString()
+        return nodes.drop(index).first().value.toString() + " [" + index + "]"
     }
 
     //setup binary tree to null

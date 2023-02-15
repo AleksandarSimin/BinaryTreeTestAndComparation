@@ -1,6 +1,7 @@
 package com.asimin.speedofbinarytree
 
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -15,19 +16,20 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    val TAG = "MainActivity"
-
-    //    val view = View.inflate(this, R.layout.activity_main, null)
-//    private lateinit var binding: MainActivity
     private lateinit var numberOfItems: EditText
     private lateinit var search: EditText
     private lateinit var btGenerateArray: Button
     private lateinit var btGenerateBT: Button
     private lateinit var btSearch: Button
-//    private lateinit var view: View
+    private val tvArraySearchTime: TextView by lazy { findViewById<TextView>(R.id.tvArraySearchTime) }
+    private val tvArrayCreationTime: TextView by lazy { findViewById<TextView>(R.id.tvArrayCreationTime) }
+    private val tvBTSearchTime: TextView by lazy { findViewById<TextView>(R.id.tvBinaryTreeSearchTime) }
+    private val tvBTCreationTime: TextView by lazy { findViewById<TextView>(R.id.tvBinaryTreeCreationTime) }
+    private val tvEqual: TextView by lazy { findViewById<TextView>(R.id.tvEquals) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,21 +40,11 @@ class MainActivity : AppCompatActivity() {
         btGenerateArray = findViewById<Button>(R.id.btnGenerateArray)
         btGenerateBT = findViewById<Button>(R.id.btnGenerateBT)
         btSearch = findViewById<Button>(R.id.btnSearch)
-        val tvArrayCreationTime = findViewById<TextView>(R.id.tvArrayCreationTime)
-        val tvArraySearchTime = findViewById<TextView>(R.id.tvArraySearchTime)
-        val tvBTSearchTime = findViewById<TextView>(R.id.tvBinaryTreeSearchTime)
-        val tvBTCreationTime = findViewById<TextView>(R.id.tvBinaryTreeCreationTime)
         var numberOfItemsValidator = false
-        val binaryTree = BinaryTree<String>()
 
         numberOfItems.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
             if (!hasFocus) {
-                if (numberOfItems.text.toString().isEmpty()) { //if the field is empty  - show error
-                    numberOfItemsValidator = false
-                    Toast.makeText(this, "Please enter a number OFCL", Toast.LENGTH_SHORT).show()
-                } else {
-                    numberOfItemsValidator = true
-                }
+                numberOfItemsValidator = numberOfItems.text.toString().isNotEmpty()
             } else {
                 search.clearFocus()
             }
@@ -62,28 +54,40 @@ class MainActivity : AppCompatActivity() {
                 numberOfItemsValidator = false
                 tvArrayCreationTime.visibility = View.INVISIBLE
                 tvBTCreationTime.visibility = View.INVISIBLE
+                tvArraySearchTime.visibility = View.INVISIBLE
+                tvBTSearchTime.visibility = View.INVISIBLE
+                arrayList.clear()
+                binaryTree.clear()
+                search.text = null
             } else {
+                if (text.toString().toInt() > 1000000) {
+                    numberOfItems.text = SpannableStringBuilder("1000000")
+                    Toast.makeText(this, "Maximum is 1,000,000", Toast.LENGTH_SHORT).show()
+                }
                 numberOfItemsValidator = true
             }
         }
 
         btGenerateArray.setOnClickListener {
-            if (!numberOfItemsValidator) {
-                Toast.makeText(this, "Please enter a number Array-OCL", Toast.LENGTH_SHORT).show()
-            } else {
+            if (numberOfItemsValidator) {
                 hideKeyboard()
                 tvArrayCreationTime.visibility = View.VISIBLE
+                tvArraySearchTime.visibility = View.INVISIBLE
+                tvEqual.text = null
+                generateArray()
             }
         }
+
         btGenerateBT.setOnClickListener {
             if (numberOfItemsValidator) {
                 hideKeyboard()
-                if (numberOfItems.text.toString().toInt() > 1000000) {
-                    Toast.makeText(this, "Please enter a number less than 1,000,000", Toast.LENGTH_SHORT).show()
+                tvBTCreationTime.visibility = View.VISIBLE
+                tvBTSearchTime.visibility = View.INVISIBLE
+                if (arrayList.isNotEmpty()) {
+                    generateBinaryTreeFromArrayList(binaryTree)
+                    tvEqual.text = "=="
                 } else {
-                    tvBTCreationTime.visibility = View.VISIBLE
-                    tvBTSearchTime.visibility = View.INVISIBLE
-                    generateBinaryTree(binaryTree, tvBTCreationTime)
+                    generateBinaryTree(binaryTree,)
                 }
             }
         }
@@ -101,24 +105,79 @@ class MainActivity : AppCompatActivity() {
                 numberOfItems.requestFocus()
             } else {
                 hideKeyboard()
-                //create string searchPrefix which will be created from the search text as text until fist space
-                //if there is no space, then searchPrefix will be the same as search text
-                val searchPrefix = search.text.toString().substringBefore(" ")
-                val startTime = System.currentTimeMillis()
-                search.setText(searchPrefix + " - found: " + binaryTree.containsNode(searchPrefix))
-                val endTime = System.currentTimeMillis()
-                val timeTaken = endTime - startTime
-                tvBTSearchTime.visibility = View.VISIBLE
-                "Search Time: $timeTaken ms".also { tvBTSearchTime.text = it }
-                blinkTextInSeconds(tvBTSearchTime, 1)
+                if (arrayList.isEmpty()) {
+                    tvArrayCreationTime.text = getString(R.string.array_is_empty)
+                    tvArrayCreationTime.visibility = View.VISIBLE
+                    tvArraySearchTime.visibility = View.INVISIBLE
+                } else {
+                    searchArray()
+                }
+                if (binaryTree.root == null) {
+                    tvBTCreationTime.text = getText(R.string.binary_tree_is_empty)
+                    tvBTCreationTime.visibility = View.VISIBLE
+                    tvBTSearchTime.visibility = View.INVISIBLE
+                } else {
+                    searchBinaryTree()
+                }
             }
         }
 
     }
 
-    private fun generateBinaryTree(binaryTree: BinaryTree<String>, tvBtCreationTime: TextView) {
-        tvBtCreationTime.visibility = View.VISIBLE
-        tvBtCreationTime.text = "BinaryTree creation in progress..."
+    private fun searchArray() {
+        val searchPrefix = search.text.toString().substringBefore(" ")
+        val startTime = System.currentTimeMillis()
+        search.text = SpannableStringBuilder(searchPrefix + " - found: " + arrayList.contains(searchPrefix))
+        val endTime = System.currentTimeMillis()
+        val timeTaken = endTime - startTime
+        tvArraySearchTime.visibility = View.VISIBLE
+        "Search Time: $timeTaken ms".also { tvArraySearchTime.text = it }
+        blinkTextInSeconds(tvArraySearchTime, 1)
+    }
+
+    private val binaryTree = BinaryTree<String>()
+    private fun searchBinaryTree() {
+        val searchPrefix = search.text.toString().substringBefore(" ")
+        val startTime = System.currentTimeMillis()
+        search.text = SpannableStringBuilder(searchPrefix + " - found: " + binaryTree.containsNode(searchPrefix))
+        val endTime = System.currentTimeMillis()
+        val timeTaken = endTime - startTime
+        tvBTSearchTime.visibility = View.VISIBLE
+        "Search Time: $timeTaken ms".also { tvBTSearchTime.text = it }
+        blinkTextInSeconds(tvBTSearchTime, 1)
+    }
+
+    private val arrayList = ArrayList<String>()
+    private fun generateArray() {
+        arrayList.clear()
+        binaryTree.clear()
+        tvBTSearchTime.visibility = View.INVISIBLE
+        tvBTCreationTime.visibility = View.VISIBLE
+        tvBTCreationTime.text = getString(R.string.binary_tree_is_empty)
+        tvArrayCreationTime.visibility = View.VISIBLE
+        tvArrayCreationTime.text = getString(R.string.creation_in_progress)
+        search.text = null
+        lifecycleScope.launch {
+            val startTime = System.currentTimeMillis()
+            withContext(Dispatchers.Default) {
+                for (i in 1..numberOfItems.text.toString().toInt()) {
+                    arrayList.add(generateRandomString())
+                }
+            }
+            val endTime = System.currentTimeMillis()
+            val timeTaken = endTime - startTime
+            "Array created for: $timeTaken ms".also {
+                tvArrayCreationTime.text = it
+            }
+            val index = Random().nextInt(arrayList.size)
+            search.text = SpannableStringBuilder(arrayList[index] + " [$index]")
+        }
+
+    }
+
+    private fun generateBinaryTree(binaryTree: BinaryTree<String>) {
+        tvBTCreationTime.visibility = View.VISIBLE
+        tvBTCreationTime.text = getString(R.string.creation_in_progress)
         lifecycleScope.launch {
             binaryTree.clear()
             val startTime = System.currentTimeMillis()
@@ -129,7 +188,25 @@ class MainActivity : AppCompatActivity() {
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
-            "BinaryTree created for: $timeTaken ms".also { tvBtCreationTime.text = it }
+            "BinaryTree created for: $timeTaken ms".also { tvBTCreationTime.text = it }
+            search.setText(binaryTree.getRandomNode(numberOfItems.text.toString().toInt()-1))
+        }
+    }
+
+    private fun generateBinaryTreeFromArrayList(binaryTree: BinaryTree<String>) {
+        tvBTCreationTime.visibility = View.VISIBLE
+        tvBTCreationTime.text = getString(R.string.creation_from_array_in_progress)
+        lifecycleScope.launch {
+            binaryTree.clear()
+            val startTime = System.currentTimeMillis()
+            withContext(Dispatchers.Default) {
+                for (i in 0..(arrayList.size-1)) {
+                    binaryTree.addNode(arrayList[i])
+                }
+            }
+            val endTime = System.currentTimeMillis()
+            val timeTaken = endTime - startTime
+            "Array -> BinaryTree for: $timeTaken ms".also { tvBTCreationTime.text = it }
             search.setText(binaryTree.getRandomNode(numberOfItems.text.toString().toInt()-1))
         }
     }
@@ -142,8 +219,9 @@ class MainActivity : AppCompatActivity() {
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
+
+    private val charPool: List<Char> = ('A'..'Z') + ('a'..'z')
     private fun generateRandomString(): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z')
         return (1..10).map { kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
@@ -152,8 +230,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun blinkTextInSeconds(blinkingText: TextView, i: Int) {
         val anim = AlphaAnimation(0.0f, 1.0f)
-        anim.duration = 1000 //You can manage the blinking time with this parameter
-        anim.startOffset = 0
+        anim.duration = 800 //You can manage the blinking time with this parameter
+        anim.startOffset = 200
         anim.repeatMode = Animation.REVERSE
         anim.repeatCount = i
         blinkingText.startAnimation(anim)
