@@ -2,6 +2,8 @@ package com.asimin.speedofbinarytree
 
 import android.os.Bundle
 import android.view.View
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
@@ -39,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         val tvArrayCreationTime = findViewById<TextView>(R.id.tvArrayCreationTime)
         val tvArraySearchTime = findViewById<TextView>(R.id.tvArraySearchTime)
         val tvBTSearchTime = findViewById<TextView>(R.id.tvBinaryTreeSearchTime)
-        val tvBtCreationTime = findViewById<TextView>(R.id.tvBinaryTreeCreationTime)
+        val tvBTCreationTime = findViewById<TextView>(R.id.tvBinaryTreeCreationTime)
         var numberOfItemsValidator = false
         val binaryTree = BinaryTree<String>()
 
@@ -59,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             if (text.toString().isEmpty()) { //if the field is empty  - show error
                 numberOfItemsValidator = false
                 tvArrayCreationTime.visibility = View.INVISIBLE
-                tvBtCreationTime.visibility = View.INVISIBLE
+                tvBTCreationTime.visibility = View.INVISIBLE
             } else {
                 numberOfItemsValidator = true
             }
@@ -76,8 +78,13 @@ class MainActivity : AppCompatActivity() {
         btGenerateBT.setOnClickListener {
             if (numberOfItemsValidator) {
                 hideKeyboard()
-                tvBtCreationTime.visibility = View.VISIBLE
-                generateBinaryTree(binaryTree, tvBtCreationTime)
+                if (numberOfItems.text.toString().toInt() > 1000000) {
+                    Toast.makeText(this, "Please enter a number less than 1,000,000", Toast.LENGTH_SHORT).show()
+                } else {
+                    tvBTCreationTime.visibility = View.VISIBLE
+                    tvBTSearchTime.visibility = View.INVISIBLE
+                    generateBinaryTree(binaryTree, tvBTCreationTime)
+                }
             }
         }
 
@@ -98,17 +105,20 @@ class MainActivity : AppCompatActivity() {
                 //if there is no space, then searchPrefix will be the same as search text
                 val searchPrefix = search.text.toString().substringBefore(" ")
                 val startTime = System.currentTimeMillis()
-                search.setText(searchPrefix + " " + binaryTree.searchNode(searchPrefix))
+                search.setText(searchPrefix + " - found: " + binaryTree.containsNode(searchPrefix))
                 val endTime = System.currentTimeMillis()
                 val timeTaken = endTime - startTime
                 tvBTSearchTime.visibility = View.VISIBLE
                 "Search Time: $timeTaken ms".also { tvBTSearchTime.text = it }
+                blinkTextInSeconds(tvBTSearchTime, 1)
             }
         }
 
     }
 
     private fun generateBinaryTree(binaryTree: BinaryTree<String>, tvBtCreationTime: TextView) {
+        tvBtCreationTime.visibility = View.VISIBLE
+        tvBtCreationTime.text = "BinaryTree creation in progress..."
         lifecycleScope.launch {
             binaryTree.clear()
             val startTime = System.currentTimeMillis()
@@ -119,10 +129,9 @@ class MainActivity : AppCompatActivity() {
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
-            "Generated in: $timeTaken ms".also { tvBtCreationTime.text = it }
+            "BinaryTree created for: $timeTaken ms".also { tvBtCreationTime.text = it }
             search.setText(binaryTree.getRandomNode(numberOfItems.text.toString().toInt()-1))
         }
-        Toast.makeText(this, "Binary Tree creation in progress...", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -141,6 +150,14 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun blinkTextInSeconds(blinkingText: TextView, i: Int) {
+        val anim = AlphaAnimation(0.0f, 1.0f)
+        anim.duration = 1000 //You can manage the blinking time with this parameter
+        anim.startOffset = 0
+        anim.repeatMode = Animation.REVERSE
+        anim.repeatCount = i
+        blinkingText.startAnimation(anim)
+    }
 
 }
 

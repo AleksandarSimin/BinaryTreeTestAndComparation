@@ -107,6 +107,11 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Creation Time: "
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeStepGranularity="1sp"
                 android:visibility="invisible">
             </TextView>
 

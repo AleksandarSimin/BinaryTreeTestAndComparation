@@ -99,47 +99,30 @@ class BinaryTree<T : Comparable<T>> {
         return root!!.value.toString()
     }
 
-
     //get random Node.value from binary tree
-    fun getRandomNode(randomInt: Int): String {
-        var randomNode: Node<T>? = null
-        var counter = 0
+    fun getRandomNode(maxIndex: Int): String? {
         val random = Random()
-        val randomInt = random.nextInt(randomInt)
-        val iterator = object : Iterator<Node<T>> {
-            private var stack = Stack<Node<T>>()
+        val nodes = mutableListOf<Node<T>>()
 
-            init {
-                pushLeft(root)
+        fun traverse(node: Node<T>?) {
+            if (node == null) {
+                return
             }
-
-            private fun pushLeft(node: Node<T>?) {
-                var node = node
-                while (node != null) {
-                    stack.push(node)
-                    node = node.left
-                }
-            }
-
-            override fun hasNext(): Boolean {
-                return !stack.isEmpty()
-            }
-
-            override fun next(): Node<T> {
-                val node = stack.pop()
-                pushLeft(node.right)
-                return node
-            }
+            traverse(node.left)
+            nodes.add(node)
+            traverse(node.right)
         }
-        while (iterator.hasNext()) {
-            randomNode = iterator.next()
-            if (counter == randomInt) {
-                break
-            }
-            counter++
+
+        traverse(root)
+
+        if (maxIndex >= nodes.size) {
+            return null
         }
-        return randomNode!!.value.toString() + " " + counter
+
+        val randomIndex = random.nextInt(maxIndex)
+        return nodes.drop(randomIndex).first().value.toString() + " [" + randomIndex + "]"
     }
+
 
     //get Node.value from binary Tree for given index
     fun getNodeByIndex(index: Int): String {
@@ -178,45 +161,6 @@ class BinaryTree<T : Comparable<T>> {
             counter++
         }
         return randomNode!!.value.toString()
-    }
-
-    //search for Node.value in binary tree when arg is String if found return true else false
-    fun searchNode(value: String): Boolean {
-        var randomNode: Node<T>? = null
-        var counter = 0
-        val iterator = object : Iterator<Node<T>> {
-            private var stack = Stack<Node<T>>()
-
-            init {
-                pushLeft(root)
-            }
-
-            private fun pushLeft(node: Node<T>?) {
-                var node = node
-                while (node != null) {
-                    stack.push(node)
-                    node = node.left
-                }
-            }
-
-            override fun hasNext(): Boolean {
-                return !stack.isEmpty()
-            }
-
-            override fun next(): Node<T> {
-                val node = stack.pop()
-                pushLeft(node.right)
-                return node
-            }
-        }
-        while (iterator.hasNext()) {
-            randomNode = iterator.next()
-            if (randomNode.value.toString() == value) {
-                return true
-            }
-            counter++
-        }
-        return false
     }
 
     //setup binary tree to null
