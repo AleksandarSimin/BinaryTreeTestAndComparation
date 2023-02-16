@@ -138,6 +138,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun searchArrayFromList() {
         inSearch = true
+        numberOfItems.isEnabled = false
+        tvArraySearchTime.visibility = View.VISIBLE
+        tvArraySearchTime.text = getString(R.string.searching_wait)
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
@@ -147,10 +150,10 @@ class MainActivity : AppCompatActivity() {
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
-            tvArraySearchTime.visibility = View.VISIBLE
             "Search Time: $timeTaken ms".also { tvArraySearchTime.text = it }
             blinkTextInSeconds(tvArraySearchTime, 1)
             inSearch = false
+            numberOfItems.isEnabled = true
         }
     }
 

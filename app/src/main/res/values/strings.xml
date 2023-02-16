@@ -11,4 +11,5 @@
     <string name="binary_tree">Binary Tree</string>
     <string name="automatically_generated">automatically generated</string>
     <string name="search">SEARCH</string>
+    <string name="searching_wait">Searching ...</string>
 </resources>
