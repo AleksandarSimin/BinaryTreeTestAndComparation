@@ -99,7 +99,8 @@ class MainActivity : AppCompatActivity() {
                 numberOfItems.requestFocus()
             } else {
                 hideKeyboard()
-                if (searchList.size > 2500) Toast.makeText(this, "Searching ..., Please Wait!", Toast.LENGTH_SHORT).show()
+                search.text = SpannableStringBuilder("Search from list of ${searchList.size} items")
+                if (searchList.size > 2500) Toast.makeText(this, "Searching..., Please Wait!", Toast.LENGTH_SHORT).show()
                 if (arrayList.isEmpty()) {
                     tvArrayCreationTime.text = getString(R.string.array_is_empty)
                     tvArrayCreationTime.visibility = View.VISIBLE
@@ -143,15 +144,17 @@ class MainActivity : AppCompatActivity() {
         tvArraySearchTime.text = getString(R.string.searching_wait)
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
+            var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
-                    arrayList.contains(i)
+                    if (arrayList.contains(i)) found++
                 }
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
             "Search Time: $timeTaken ms".also { tvArraySearchTime.text = it }
             blinkTextInSeconds(tvArraySearchTime, 1)
+            search.text = SpannableStringBuilder("Found $found items in ${searchList.size} items")
             inSearch = false
             numberOfItems.isEnabled = true
         }
@@ -160,9 +163,10 @@ class MainActivity : AppCompatActivity() {
     private fun searchBinaryTreeFromList() {
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
+            var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
-                    binaryTree.containsNode(i)
+                    if (binaryTree.containsNode(i)) found++
                 }
             }
             val endTime = System.currentTimeMillis()
@@ -170,6 +174,7 @@ class MainActivity : AppCompatActivity() {
             tvBTSearchTime.visibility = View.VISIBLE
             "Search Time: $timeTaken ms".also { tvBTSearchTime.text = it }
             blinkTextInSeconds(tvBTSearchTime, 1)
+            search.text = SpannableStringBuilder("Found $found items in ${searchList.size} items")
         }
     }
 
@@ -187,7 +192,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
-                for (i in 1..numberOfItems.text.toString().toInt()) {
+                for (i in 0 until numberOfItems.text.toString().toInt()) {
                     arrayList.add(generateRandomString())
                 }
             }
@@ -216,6 +221,7 @@ class MainActivity : AppCompatActivity() {
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
             "Array -> BinaryTree for: $timeTaken ms".also { tvBTCreationTime.text = it }
+            search.text = SpannableStringBuilder("Search from list of ${searchList.size} items")
         }
     }
 

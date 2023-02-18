@@ -102,4 +102,34 @@ class BinaryTree<T : Comparable<T>> {
         root = null
     }
 
+    fun printTree() {
+        println("Print tree:")
+        fun traverse(node: Node<T>?) {
+            if (node == null) {
+                return
+            }
+            traverse(node.left)
+            print(node.value as String + " ")
+            traverse(node.right)
+        }
+
+        traverse(root)
+        println()
+    }
+
+    fun size(): Int {
+        var size = 0
+        fun traverse(node: Node<T>?) {
+            if (node == null) {
+                return
+            }
+            traverse(node.left)
+            size++
+            traverse(node.right)
+        }
+
+        traverse(root)
+        return size
+    }
+
 }
