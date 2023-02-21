@@ -152,9 +152,8 @@ class MainActivity : AppCompatActivity() {
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
-            "Search Time: $timeTaken ms".also { tvArraySearchTime.text = it }
-            blinkTextInSeconds(tvArraySearchTime, 1)
-            search.text = SpannableStringBuilder("Found $found items in ${searchList.size} items")
+            blinkViewField(tvArraySearchTime, 1)
+            showSearchTime(tvArraySearchTime, found, timeTaken)
             inSearch = false
             numberOfItems.isEnabled = true
         }
@@ -172,9 +171,8 @@ class MainActivity : AppCompatActivity() {
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
             tvBTSearchTime.visibility = View.VISIBLE
-            "Search Time: $timeTaken ms".also { tvBTSearchTime.text = it }
-            blinkTextInSeconds(tvBTSearchTime, 1)
-            search.text = SpannableStringBuilder("Found $found items in ${searchList.size} items")
+            blinkViewField(tvBTSearchTime, 1)
+            showSearchTime(tvBTSearchTime, found, timeTaken)
         }
     }
 
@@ -241,14 +239,18 @@ class MainActivity : AppCompatActivity() {
             .joinToString("")
     }
 
-
-    private fun blinkTextInSeconds(blinkingText: TextView, i: Int) {
+    private fun blinkViewField(textView: TextView, times: Int) {
         val anim = AlphaAnimation(0.0f, 1.0f)
         anim.duration = 800 //You can manage the blinking time with this parameter
-        anim.startOffset = 200
+        anim.startOffset = 20
         anim.repeatMode = Animation.REVERSE
-        anim.repeatCount = i
-        blinkingText.startAnimation(anim)
+        anim.repeatCount = times
+        textView.startAnimation(anim)
+    }
+
+    private fun showSearchTime(textView: TextView, found: Int, timeTaken: Long) {
+        search.text = SpannableStringBuilder("Found $found of ${searchList.size} items")
+        "Search Time: $timeTaken ms".also { textView.text = it }
     }
 
 }
