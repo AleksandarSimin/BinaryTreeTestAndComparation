@@ -1,15 +1,19 @@
 <resources>
     <string name="app_name">Speed of Binary Tree</string>
     <string name="binary_tree_is_empty">Binary Tree is empty</string>
-    <string name="creation_in_progress">Creation in progress...</string>
-    <string name="creation_from_array_in_progress">Creation from Array in progress...</string>
+    <string name="creation_in_progress">Creation in progress…</string>
+    <string name="creation_from_array_in_progress">Creation from Array in progress…</string>
     <string name="array_is_empty">Array is empty</string>
     <string name="number_of_elements">Number of Elements</string>
     <string name="enter_number">Enter number</string>
     <string name="array_elements">Array Elements</string>
     <string name="generate">Generate</string>
     <string name="binary_tree">Binary Tree</string>
-    <string name="automatically_generated">automatically generated</string>
+    <string name="automatically_generated">Search list not created!</string>
+    <string name="search_list_contain">Search list contain </string>
     <string name="search">SEARCH</string>
-    <string name="searching_wait">Searching...</string>
+    <string name="searching_wait">Searching…</string>
+    <string name="show_time">"Show Time while Searching: "</string>
+    <string name="search_time">"Search Time: "</string>
+    <string name="items">items</string>
 </resources>

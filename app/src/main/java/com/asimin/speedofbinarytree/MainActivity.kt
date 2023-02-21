@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val search: TextView by lazy { findViewById<TextView>(R.id.tvSearch) }
     private val tvEqual: TextView by lazy { findViewById<TextView>(R.id.tvEquals) }
     private var inSearch = false
+    private var inSearchTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         btGenerateBT = findViewById<Button>(R.id.btnGenerateBT)
         btSearch = findViewById<Button>(R.id.btnSearch)
         search.setTextColor(resources.getColor(R.color.search_text, null))
+        search.text = getString(R.string.automatically_generated)
+
         var numberOfItemsValidator = false
 
         numberOfItems.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 numberOfItemsValidator = numberOfItems.text.toString().isNotEmpty()
             }
         }
+
         numberOfItems.doOnTextChanged { text, start, before, count ->
             if (text.toString().isEmpty()) { //if the field is empty  - show error
                 numberOfItemsValidator = false
@@ -58,7 +63,7 @@ class MainActivity : AppCompatActivity() {
                 arrayList.clear()
                 binaryTree.clear()
                 searchList.clear()
-                search.text = null
+                search.text = getString(R.string.automatically_generated)
             } else {
                 if (text.toString().toInt() > 1000000) {
                     numberOfItems.text = SpannableStringBuilder("1000000")
@@ -99,8 +104,11 @@ class MainActivity : AppCompatActivity() {
                 numberOfItems.requestFocus()
             } else {
                 hideKeyboard()
-                search.text = SpannableStringBuilder("Search from list of ${searchList.size} items")
-                if (searchList.size > 2500) Toast.makeText(this, "Searching..., Please Wait!", Toast.LENGTH_SHORT).show()
+                if (searchList.size > 2500) Toast.makeText(
+                    this,
+                    "Searching..., Please Wait!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 if (arrayList.isEmpty()) {
                     tvArrayCreationTime.text = getString(R.string.array_is_empty)
                     tvArrayCreationTime.visibility = View.VISIBLE
@@ -120,25 +128,42 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        setConditionalViewFieldTimer(search)
     }
 
+    private fun setConditionalViewFieldTimer(textView: TextView) { //set timer to update time every second
+        val timer = Timer()
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                if (inSearch) {
+                    textView.text =
+                        SpannableStringBuilder(getString(R.string.search_time) + (System.currentTimeMillis() - inSearchTime) / 1000 + " seconds")
+                }
+            }
+        }, 0, 1000)
+    }
+
+
     private val searchList = ArrayList<String>()
-    private fun generateSearchListFromArray(size: Int) {
+    private fun generateSearchListFromArray() {
+        val size = numberOfItems.text.toString().toInt()
         if (arrayList.isEmpty()) {
             Toast.makeText(this, "Generate Array First", Toast.LENGTH_SHORT).show()
             return
         }
         searchList.clear()
-        val newSize = if (size > 5000) 5000 else size
+        val newSize = if (size < 100) size else if (size > 5000) 5000 else (size * 0.05).toInt()
         val random = Random()
         for (i in 0 until newSize) {
-            searchList.add(arrayList[random.nextInt(arrayList.size-1)])
+            searchList.add(arrayList[random.nextInt(arrayList.size - 1)])
         }
-        search.text = SpannableStringBuilder("Search from list of ${searchList.size} items")
+        search.text =
+            SpannableStringBuilder(getString(R.string.search_list_contain) + " ${searchList.size} items")
     }
 
     private fun searchArrayFromList() {
         inSearch = true
+        inSearchTime = System.currentTimeMillis()
         numberOfItems.isEnabled = false
         tvArraySearchTime.visibility = View.VISIBLE
         tvArraySearchTime.text = getString(R.string.searching_wait)
@@ -152,9 +177,11 @@ class MainActivity : AppCompatActivity() {
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
+            inSearch = false
+            inSearchTime = 0
+            search.text = SpannableStringBuilder("Found $found of ${searchList.size} items")
             blinkViewField(tvArraySearchTime, 1)
             showSearchTime(tvArraySearchTime, found, timeTaken)
-            inSearch = false
             numberOfItems.isEnabled = true
         }
     }
@@ -179,6 +206,7 @@ class MainActivity : AppCompatActivity() {
     private val arrayList = ArrayList<String>()
     private val binaryTree = BinaryTree<String>()
     private fun generateArray() {
+        numberOfItems.clearFocus()
         arrayList.clear()
         binaryTree.clear()
         tvBTSearchTime.visibility = View.INVISIBLE
@@ -186,7 +214,6 @@ class MainActivity : AppCompatActivity() {
         tvBTCreationTime.text = getString(R.string.binary_tree_is_empty)
         tvArrayCreationTime.visibility = View.VISIBLE
         tvArrayCreationTime.text = getString(R.string.creation_in_progress)
-        search.text = null
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
@@ -201,25 +228,27 @@ class MainActivity : AppCompatActivity() {
             }
             val index = Random().nextInt(arrayList.size)
             search.text = SpannableStringBuilder(arrayList[index] + " [$index]")
-            generateSearchListFromArray((numberOfItems.text.toString().toInt()*0.05).toInt())
+            generateSearchListFromArray()
         }
     }
 
     private fun generateBinaryTreeFromArrayList(binaryTree: BinaryTree<String>) {
+        numberOfItems.clearFocus()
         tvBTCreationTime.visibility = View.VISIBLE
         tvBTCreationTime.text = getString(R.string.creation_from_array_in_progress)
         lifecycleScope.launch {
             binaryTree.clear()
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
-                for (i in 0..(arrayList.size-1)) {
+                for (i in 0..(arrayList.size - 1)) {
                     binaryTree.addNode(arrayList[i])
                 }
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
             "Array -> BinaryTree for: $timeTaken ms".also { tvBTCreationTime.text = it }
-            search.text = SpannableStringBuilder("Search from list of ${searchList.size} items")
+            search.text =
+                SpannableStringBuilder(getString(R.string.search_list_contain) + " ${searchList.size} items")
         }
     }
 
@@ -229,6 +258,7 @@ class MainActivity : AppCompatActivity() {
         if (view != null) {
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
+            numberOfItems.clearFocus()
         }
     }
 
@@ -249,8 +279,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSearchTime(textView: TextView, found: Int, timeTaken: Long) {
-        search.text = SpannableStringBuilder("Found $found of ${searchList.size} items")
         "Search Time: $timeTaken ms".also { textView.text = it }
+    }
+
+    private fun getTimeFromDate(): String {
+        val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        return format.format(Date())
     }
 
 }
