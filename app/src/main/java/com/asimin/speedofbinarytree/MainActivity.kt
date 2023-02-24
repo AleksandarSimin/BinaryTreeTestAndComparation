@@ -1,5 +1,7 @@
 package com.asimin.speedofbinarytree
 
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.View
@@ -88,7 +90,7 @@ class MainActivity : AppCompatActivity() {
                 hideKeyboard()
                 tvBTCreationTime.visibility = View.VISIBLE
                 tvBTSearchTime.visibility = View.INVISIBLE
-                if (arrayList.isNotEmpty()) {
+                if (tvArrayCreationTime.text.toString() != getString(R.string.creation_in_progress)) {
                     generateBinaryTreeFromArrayList(binaryTree)
                     tvEqual.text = "=="
                 } else {
@@ -104,11 +106,6 @@ class MainActivity : AppCompatActivity() {
                 numberOfItems.requestFocus()
             } else {
                 hideKeyboard()
-                if (searchList.size > 2500) Toast.makeText(
-                    this,
-                    "Searching..., Please Wait!",
-                    Toast.LENGTH_SHORT
-                ).show()
                 if (arrayList.isEmpty()) {
                     tvArrayCreationTime.text = getString(R.string.array_is_empty)
                     tvArrayCreationTime.visibility = View.VISIBLE
@@ -155,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         val newSize = if (size < 100) size else if (size > 5000) 5000 else (size * 0.05).toInt()
         val random = Random()
         for (i in 0 until newSize) {
-            searchList.add(arrayList[random.nextInt(arrayList.size - 1)])
+            searchList.add(arrayList[random.nextInt(arrayList.size)])
         }
         search.text =
             SpannableStringBuilder(getString(R.string.search_list_contain) + " ${searchList.size} items")
@@ -166,13 +163,20 @@ class MainActivity : AppCompatActivity() {
         inSearchTime = System.currentTimeMillis()
         numberOfItems.isEnabled = false
         tvArraySearchTime.visibility = View.VISIBLE
-        tvArraySearchTime.text = getString(R.string.searching_wait)
+        tvArraySearchTime.text = getString(R.string.searching)
+        val progressDialog = MyProgressDialog(this)
+        progressDialog.showProgressDialog()
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
                     if (arrayList.contains(i)) found++
+                    if (searchList.size > 99) {
+                        if (found % (searchList.size / 100) == 0) { //update progress every 1%
+                            progressDialog.updateProgressDialog((found * 100 / searchList.size))
+                        }
+                    }
                 }
             }
             val endTime = System.currentTimeMillis()
@@ -180,10 +184,17 @@ class MainActivity : AppCompatActivity() {
             inSearch = false
             inSearchTime = 0
             search.text = SpannableStringBuilder("Found $found of ${searchList.size} items")
+            progressDialog.hideProgressDialog()
+            beep()
             blinkViewField(tvArraySearchTime, 1)
             showSearchTime(tvArraySearchTime, found, timeTaken)
             numberOfItems.isEnabled = true
         }
+    }
+
+    private fun beep() {
+        val tone = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+        tone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 100)   //make beep sound
     }
 
     private fun searchBinaryTreeFromList() {
@@ -197,6 +208,7 @@ class MainActivity : AppCompatActivity() {
             }
             val endTime = System.currentTimeMillis()
             val timeTaken = endTime - startTime
+            beep()
             tvBTSearchTime.visibility = View.VISIBLE
             blinkViewField(tvBTSearchTime, 1)
             showSearchTime(tvBTSearchTime, found, timeTaken)
@@ -286,6 +298,7 @@ class MainActivity : AppCompatActivity() {
         val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         return format.format(Date())
     }
+
 
 }
 

@@ -12,7 +12,7 @@
     <string name="automatically_generated">Search list not created!</string>
     <string name="search_list_contain">Search list contain </string>
     <string name="search">SEARCH</string>
-    <string name="searching_wait">Searching…</string>
+    <string name="searching">Searching…</string>
     <string name="show_time">"Show Time while Searching: "</string>
     <string name="search_time">"Search Time: "</string>
     <string name="items">items</string>
