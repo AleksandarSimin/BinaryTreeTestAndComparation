@@ -99,6 +99,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+        val progressDialog = MyProgressDialog(this)
         btSearch.setOnClickListener {
             if (inSearch) return@setOnClickListener
             if (numberOfItems.text.toString().isEmpty()) { //if the field is empty  - show error
@@ -112,7 +114,8 @@ class MainActivity : AppCompatActivity() {
                     tvArraySearchTime.visibility = View.INVISIBLE
                 } else {
                     tvArraySearchTime.text = null
-                    searchArrayFromList()
+                    progressDialog.showProgressDialog()
+                    searchArrayFromList(progressDialog)
                 }
                 if (binaryTree.root == null) {
                     tvBTCreationTime.text = getText(R.string.binary_tree_is_empty)
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                     tvBTSearchTime.visibility = View.INVISIBLE
                 } else {
                     tvBTSearchTime.text = null
-                    searchBinaryTreeFromList()
+                    searchBinaryTreeFromList(progressDialog)
                 }
             }
         }
@@ -158,23 +161,21 @@ class MainActivity : AppCompatActivity() {
             SpannableStringBuilder(getString(R.string.search_list_contain) + " ${searchList.size} items")
     }
 
-    private fun searchArrayFromList() {
+    private fun searchArrayFromList(progressDialog: MyProgressDialog) {
         inSearch = true
         inSearchTime = System.currentTimeMillis()
         numberOfItems.isEnabled = false
         tvArraySearchTime.visibility = View.VISIBLE
         tvArraySearchTime.text = getString(R.string.searching)
-        val progressDialog = MyProgressDialog(this)
-        progressDialog.showProgressDialog()
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
                     if (arrayList.contains(i)) found++
-                    if (searchList.size > 99) {
-                        if (found % (searchList.size / 100) == 0) { //update progress every 1%
-                            progressDialog.updateProgressDialog((found * 100 / searchList.size))
+                    if (searchList.size > 99) {     // for more precise metering remove this if, this is just for better presentation
+                        if (found % (searchList.size / 100) == 0) { //update progress bar every 1% of searchList
+                            progressDialog.updateProgressDialogArray((found * 100 / searchList.size))
                         }
                     }
                 }
@@ -197,13 +198,18 @@ class MainActivity : AppCompatActivity() {
         tone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 100)   //make beep sound
     }
 
-    private fun searchBinaryTreeFromList() {
+    private fun searchBinaryTreeFromList(progressDialog: MyProgressDialog) {
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
                     if (binaryTree.containsNode(i)) found++
+                    if (searchList.size > 99) {     // for more precise metering remove this if
+                        if (found % (searchList.size / 100) == 0) { //update progress every 1%
+                            progressDialog.updateProgressDialogBT((found * 100 / searchList.size))
+                        }
+                    }
                 }
             }
             val endTime = System.currentTimeMillis()

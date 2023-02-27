@@ -10,18 +10,22 @@ import kotlinx.coroutines.withContext
 
 class MyProgressDialog(context: Context) {
     private val progressDialog: AlertDialog
-    private val progressBar: ProgressBar
+    private val progressBarArray: ProgressBar
+    private val progressBarBT: ProgressBar
     private val progressTitle: TextView
-    private val progressProgressPercentage: TextView
+    private val progressProgressPercentageArray: TextView
+    private val progressProgressPercentageBT: TextView
 
 
     init {
         val builder = AlertDialog.Builder(context)
         val inflater = LayoutInflater.from(context)
         val view = inflater.inflate(R.layout.progress_dialog_layout, null)
-        progressBar = view.findViewById(R.id.progressBar)
         progressTitle = view.findViewById(R.id.tvTitle)
-        progressProgressPercentage = view.findViewById(R.id.tvProgressPercentage)
+        progressBarArray = view.findViewById(R.id.progressBarArray)
+        progressBarBT = view.findViewById(R.id.progressBarBT)
+        progressProgressPercentageArray = view.findViewById(R.id.tvProgressPercentageArray)
+        progressProgressPercentageBT = view.findViewById(R.id.tvProgressPercentageBT)
         builder.setView(view)
         builder.setCancelable(false)
         progressDialog = builder.create()
@@ -38,10 +42,17 @@ class MyProgressDialog(context: Context) {
     }
 
     // Update the ProgressDialog with the current progress value
-    suspend fun updateProgressDialog(progress: Int) {
+    suspend fun updateProgressDialogArray(progress: Int) {
         withContext(Dispatchers.Main) {
-            progressBar.progress = progress
-            progressProgressPercentage.text = "$progress%"
+            progressBarArray.progress = progress
+            progressProgressPercentageArray.text = "$progress%"
+        }
+    }
+
+    suspend fun updateProgressDialogBT(progress: Int) {
+        withContext(Dispatchers.Main) {
+            progressBarBT.progress = progress
+            progressProgressPercentageBT.text = "$progress%"
         }
     }
 }
