@@ -65,7 +65,12 @@
                 android:layout_marginHorizontal="30dp"
                 android:gravity="center"
                 android:textStyle="bold"
-                android:text="@string/generate">
+                android:text="@string/generate"
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeStepGranularity="1sp">
             </Button>
 
             <TextView
@@ -73,6 +78,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeStepGranularity="1sp"
                 android:visibility="invisible">
             </TextView>
 
@@ -124,7 +134,12 @@
                 android:layout_marginHorizontal="30dp"
                 android:gravity="center"
                 android:textStyle="bold"
-                android:text= "@string/generate">
+                android:text= "@string/generate"
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="10sp"
+                app:autoSizeMaxTextSize="30sp"
+                app:autoSizeStepGranularity="1sp">
             </Button>
 
             <TextView
