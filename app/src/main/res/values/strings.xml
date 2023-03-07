@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Speed of Binary Tree</string>
+    <string name="app_name">Binary Alex</string>
     <string name="binary_tree_is_empty">Binary Tree is empty</string>
     <string name="creation_in_progress">Creation in progress…</string>
     <string name="creation_from_array_in_progress">Creation from Array in progress…</string>

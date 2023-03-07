@@ -13,8 +13,8 @@ class MyProgressDialog(context: Context) {
     private val progressBarArray: ProgressBar
     private val progressBarBT: ProgressBar
     private val progressTitle: TextView
-    private val progressProgressPercentageArray: TextView
-    private val progressProgressPercentageBT: TextView
+    private val progressPercentageArray: TextView
+    private val progressPercentageBT: TextView
 
 
     init {
@@ -24,8 +24,8 @@ class MyProgressDialog(context: Context) {
         progressTitle = view.findViewById(R.id.tvTitle)
         progressBarArray = view.findViewById(R.id.progressBarArray)
         progressBarBT = view.findViewById(R.id.progressBarBT)
-        progressProgressPercentageArray = view.findViewById(R.id.tvProgressPercentageArray)
-        progressProgressPercentageBT = view.findViewById(R.id.tvProgressPercentageBT)
+        progressPercentageArray = view.findViewById(R.id.tvProgressPercentageArray)
+        progressPercentageBT = view.findViewById(R.id.tvProgressPercentageBT)
         builder.setView(view)
         builder.setCancelable(false)
         progressDialog = builder.create()
@@ -34,6 +34,13 @@ class MyProgressDialog(context: Context) {
     // Show the ProgressDialog
     fun showProgressDialog() {
         progressDialog.show()
+    }
+
+    fun resetProgressDialog() {
+        progressBarArray.progress = 0
+        progressPercentageArray.text = "0%"
+        progressBarBT.progress = 0
+        progressPercentageBT.text = "0%"
     }
 
     // Hide the ProgressDialog
@@ -45,14 +52,14 @@ class MyProgressDialog(context: Context) {
     suspend fun updateProgressDialogArray(progress: Int) {
         withContext(Dispatchers.Main) {
             progressBarArray.progress = progress
-            progressProgressPercentageArray.text = "$progress%"
+            progressPercentageArray.text = "$progress%"
         }
     }
 
     suspend fun updateProgressDialogBT(progress: Int) {
         withContext(Dispatchers.Main) {
             progressBarBT.progress = progress
-            progressProgressPercentageBT.text = "$progress%"
+            progressPercentageBT.text = "$progress%"
         }
     }
 }

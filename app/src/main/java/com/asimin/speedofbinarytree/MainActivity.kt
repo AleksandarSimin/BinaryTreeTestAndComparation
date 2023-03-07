@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -99,36 +100,45 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
         val progressDialog = MyProgressDialog(this)
         btSearch.setOnClickListener {
-            if (inSearch) return@setOnClickListener
+            if (inSearch) return@setOnClickListener //if the search is already in progress - do nothing
             if (numberOfItems.text.toString().isEmpty()) { //if the field is empty  - show error
                 numberOfItemsValidator = false
                 numberOfItems.requestFocus()
-            } else {
+            } else {    //if the field is not empty - start search
                 hideKeyboard()
-                if (arrayList.isEmpty()) {
+                if (arrayList.size < numberOfItems.text.toString().toInt()) { //if the array is not generated yet
                     tvArrayCreationTime.text = getString(R.string.array_is_empty)
                     tvArrayCreationTime.visibility = View.VISIBLE
                     tvArraySearchTime.visibility = View.INVISIBLE
                 } else {
                     tvArraySearchTime.text = null
-                    progressDialog.showProgressDialog()
-                    searchArrayFromList(progressDialog)
-                }
-                if (binaryTree.root == null) {
-                    tvBTCreationTime.text = getText(R.string.binary_tree_is_empty)
-                    tvBTCreationTime.visibility = View.VISIBLE
-                    tvBTSearchTime.visibility = View.INVISIBLE
-                } else {
                     tvBTSearchTime.text = null
-                    searchBinaryTreeFromList(progressDialog)
+                    progressDialog.resetProgressDialog()
+                    progressDialog.showProgressDialog()
+                    if (binaryTree.root == null) { //if the binary tree is not generated yet
+                        tvBTCreationTime.text = getText(R.string.binary_tree_is_empty)
+                        tvBTCreationTime.visibility = View.VISIBLE
+                        tvBTSearchTime.visibility = View.INVISIBLE
+                    } else if (binaryTree.size() < numberOfItems.text.toString().toInt()) {  //if the binary tree generation is not finished yet
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.Main) {
+                                while (binaryTree.size() < numberOfItems.text.toString().toInt()) { //wait for binary tree generation to finish
+                                    true
+                                } //wait for binary tree to be generated
+                            }
+                        }
+                        searchBinaryTreeFromList(progressDialog)
+                    } else {
+                        searchBinaryTreeFromList(progressDialog)
+                    }
+                    searchArrayFromList(progressDialog)
                 }
             }
         }
 
-        setConditionalViewFieldTimer(search)
+        setConditionalViewFieldTimer(search)        //set timer to update time every second for search
     }
 
     private fun setConditionalViewFieldTimer(textView: TextView) { //set timer to update time every second
@@ -145,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private val searchList = ArrayList<String>()
-    private fun generateSearchListFromArray() {
+    private fun generateSearchListFromArray() {             //generate random list of items to search
         val size = numberOfItems.text.toString().toInt()
         if (arrayList.isEmpty()) {
             Toast.makeText(this, "Generate Array First", Toast.LENGTH_SHORT).show()
@@ -172,8 +182,8 @@ class MainActivity : AppCompatActivity() {
             var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
-                    if (arrayList.contains(i)) found++
-                    if (searchList.size > 99) {     // for more precise metering remove this if, this is just for better presentation
+                    if (arrayList.contains(i)) found++  // search for items in the array and count how many are found
+                    if (searchList.size > 99) {         // for more precise metering remove this if, this is just for better presentation
                         if (found % (searchList.size / 100) == 0) { //update progress bar every 1% of searchList
                             progressDialog.updateProgressDialogArray((found * 100 / searchList.size))
                         }
@@ -186,9 +196,9 @@ class MainActivity : AppCompatActivity() {
             inSearchTime = 0
             search.text = SpannableStringBuilder("Found $found of ${searchList.size} items")
             progressDialog.hideProgressDialog()
-            beep()
-            blinkViewField(tvArraySearchTime, 1)
-            showSearchTime(tvArraySearchTime, found, timeTaken)
+            beep()  //make beep sound
+            blinkViewField(tvArraySearchTime, 1)    //blink the search time field
+            showSearchTime(tvArraySearchTime, found, timeTaken) //show search time
             numberOfItems.isEnabled = true
         }
     }
@@ -204,7 +214,7 @@ class MainActivity : AppCompatActivity() {
             var found = 0
             withContext(Dispatchers.Default) {
                 for (i in searchList) {
-                    if (binaryTree.containsNode(i)) found++
+                    if (binaryTree.containsNode(i)) found++     // search for items in the binary tree and count how many are found
                     if (searchList.size > 99) {     // for more precise metering remove this if
                         if (found % (searchList.size / 100) == 0) { //update progress every 1%
                             progressDialog.updateProgressDialogBT((found * 100 / searchList.size))
@@ -235,7 +245,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
-                for (i in 0 until numberOfItems.text.toString().toInt()) {
+                for (i in 0 until numberOfItems.text.toString().toInt()) {      //generate array of random strings of length 10
                     arrayList.add(generateRandomString())
                 }
             }
@@ -254,11 +264,11 @@ class MainActivity : AppCompatActivity() {
         numberOfItems.clearFocus()
         tvBTCreationTime.visibility = View.VISIBLE
         tvBTCreationTime.text = getString(R.string.creation_from_array_in_progress)
+        binaryTree.clear()
         lifecycleScope.launch {
-            binaryTree.clear()
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
-                for (i in 0..(arrayList.size - 1)) {
+                for (i in 0..(arrayList.size - 1)) {    //generate binary tree from array,
                     binaryTree.addNode(arrayList[i])
                 }
             }
@@ -287,7 +297,7 @@ class MainActivity : AppCompatActivity() {
             .joinToString("")
     }
 
-    private fun blinkViewField(textView: TextView, times: Int) {
+    private fun blinkViewField(textView: TextView, times: Int) { //blink the search time field
         val anim = AlphaAnimation(0.0f, 1.0f)
         anim.duration = 800 //You can manage the blinking time with this parameter
         anim.startOffset = 20
@@ -300,7 +310,7 @@ class MainActivity : AppCompatActivity() {
         "Search Time: $timeTaken ms".also { textView.text = it }
     }
 
-    private fun getTimeFromDate(): String {
+    private fun getTime(): String {
         val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         return format.format(Date())
     }
