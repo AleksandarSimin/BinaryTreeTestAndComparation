@@ -16,9 +16,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     private val tvEqual: TextView by lazy { findViewById<TextView>(R.id.tvEquals) }
     private var inSearch = false
     private var inSearchTime = 0L
+    private var numberOfItemsInt = 0
+    private val formatter = DecimalFormat("#,###")
+    private val MAX_VALUE = 1000000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,36 +51,24 @@ class MainActivity : AppCompatActivity() {
         search.setTextColor(resources.getColor(R.color.search_text, null))
         search.text = getString(R.string.automatically_generated)
 
-        var numberOfItemsValidator = false
-
-        numberOfItems.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
-            if (!hasFocus) {
-                numberOfItemsValidator = numberOfItems.text.toString().isNotEmpty()
-            }
-        }
-
         numberOfItems.doOnTextChanged { text, start, before, count ->
-            if (text.toString().isEmpty()) { //if the field is empty  - show error
-                numberOfItemsValidator = false
-                tvArrayCreationTime.visibility = View.INVISIBLE
-                tvBTCreationTime.visibility = View.INVISIBLE
-                tvArraySearchTime.visibility = View.INVISIBLE
-                tvBTSearchTime.visibility = View.INVISIBLE
-                arrayList.clear()
-                binaryTree.clear()
-                searchList.clear()
-                search.text = getString(R.string.automatically_generated)
-            } else {
-                if (text.toString().toInt() > 1000000) {
-                    numberOfItems.text = SpannableStringBuilder("1000000")
-                    Toast.makeText(this, "Maximum is 1,000,000", Toast.LENGTH_SHORT).show()
-                }
-                numberOfItemsValidator = true
+            clearAll()
+            val inputText = text.toString()
+            if (inputText.startsWith("0")) {
+                numberOfItems.setText(inputText.substring(1))
+            }
+            numberOfItemsInt = inputText.toIntOrNull()?.takeIf { it > 0 } ?: 0
+            if (numberOfItemsInt > MAX_VALUE) {
+                numberOfItems.setText(MAX_VALUE.toString())
+                Toast.makeText(
+                    this,
+                    "Maximum is ${formatter.format(MAX_VALUE)}", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
         btGenerateArray.setOnClickListener {
-            if (numberOfItemsValidator) {
+            if (numberOfItemsInt > 0) {
                 hideKeyboard()
                 tvArrayCreationTime.visibility = View.VISIBLE
                 tvArraySearchTime.visibility = View.INVISIBLE
@@ -87,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btGenerateBT.setOnClickListener {
-            if (numberOfItemsValidator) {
+            if (arrayList.size > 0) {
                 hideKeyboard()
                 tvBTCreationTime.visibility = View.VISIBLE
                 tvBTSearchTime.visibility = View.INVISIBLE
@@ -104,11 +95,10 @@ class MainActivity : AppCompatActivity() {
         btSearch.setOnClickListener {
             if (inSearch) return@setOnClickListener //if the search is already in progress - do nothing
             if (numberOfItems.text.toString().isEmpty()) { //if the field is empty  - show error
-                numberOfItemsValidator = false
                 numberOfItems.requestFocus()
             } else {    //if the field is not empty - start search
                 hideKeyboard()
-                if (arrayList.size < numberOfItems.text.toString().toInt()) { //if the array is not generated yet
+                if (arrayList.size < numberOfItemsInt) { //if the array is not generated yet
                     tvArrayCreationTime.text = getString(R.string.array_is_empty)
                     tvArrayCreationTime.visibility = View.VISIBLE
                     tvArraySearchTime.visibility = View.INVISIBLE
@@ -117,14 +107,15 @@ class MainActivity : AppCompatActivity() {
                     tvBTSearchTime.text = null
                     progressDialog.resetProgressDialog()
                     progressDialog.showProgressDialog()
+                    val arrayListSize = arrayList.size
                     if (binaryTree.root == null) { //if the binary tree is not generated yet
                         tvBTCreationTime.text = getText(R.string.binary_tree_is_empty)
                         tvBTCreationTime.visibility = View.VISIBLE
                         tvBTSearchTime.visibility = View.INVISIBLE
-                    } else if (binaryTree.size() < numberOfItems.text.toString().toInt()) {  //if the binary tree generation is not finished yet
+                    } else if (binaryTree.size() < arrayListSize) {  //if the binary tree generation is not finished yet
                         lifecycleScope.launch {
                             withContext(Dispatchers.Main) {
-                                while (binaryTree.size() < numberOfItems.text.toString().toInt()) { //wait for binary tree generation to finish
+                                while (binaryTree.size() < arrayListSize) { //wait for binary tree generation to finish
                                     true
                                 } //wait for binary tree to be generated
                             }
@@ -141,6 +132,18 @@ class MainActivity : AppCompatActivity() {
         setConditionalViewFieldTimer(search)        //set timer to update time every second for search
     }
 
+    private fun clearAll() {
+        arrayList.clear()
+        binaryTree.clear()
+        searchList.clear()
+        tvEqual.text = null
+        search.text = getString(R.string.automatically_generated)
+        tvArrayCreationTime.visibility = View.INVISIBLE
+        tvBTCreationTime.visibility = View.INVISIBLE
+        tvArraySearchTime.visibility = View.INVISIBLE
+        tvBTSearchTime.visibility = View.INVISIBLE
+    }
+
     private fun setConditionalViewFieldTimer(textView: TextView) { //set timer to update time every second
         val timer = Timer()
         timer.scheduleAtFixedRate(object : TimerTask() {
@@ -154,21 +157,21 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private val searchList = ArrayList<String>()
+    private val searchList = ArrayList<String>()   // initialize search list
     private fun generateSearchListFromArray() {             //generate random list of items to search
-        val size = numberOfItems.text.toString().toInt()
         if (arrayList.isEmpty()) {
             Toast.makeText(this, "Generate Array First", Toast.LENGTH_SHORT).show()
             return
         }
         searchList.clear()
+        val size = numberOfItemsInt
         val newSize = if (size < 100) size else if (size > 5000) 5000 else (size * 0.05).toInt()
         val random = Random()
         for (i in 0 until newSize) {
             searchList.add(arrayList[random.nextInt(arrayList.size)])
         }
-        search.text =
-            SpannableStringBuilder(getString(R.string.search_list_contain) + " ${searchList.size} items")
+        search.text = SpannableStringBuilder(getString(R.string.search_list_contain)
+                    + " ${searchList.size} items")
     }
 
     private fun searchArrayFromList(progressDialog: MyProgressDialog) {
@@ -245,7 +248,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val startTime = System.currentTimeMillis()
             withContext(Dispatchers.Default) {
-                for (i in 0 until numberOfItems.text.toString().toInt()) {      //generate array of random strings of length 10
+                for (i in 0 until numberOfItemsInt) {      //generate array of random strings of length 10
                     arrayList.add(generateRandomString())
                 }
             }
@@ -254,8 +257,6 @@ class MainActivity : AppCompatActivity() {
             "Array created for: $timeTaken ms".also {
                 tvArrayCreationTime.text = it
             }
-            val index = Random().nextInt(arrayList.size)
-            search.text = SpannableStringBuilder(arrayList[index] + " [$index]")
             generateSearchListFromArray()
         }
     }
@@ -314,7 +315,6 @@ class MainActivity : AppCompatActivity() {
         val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         return format.format(Date())
     }
-
 
 }
 
